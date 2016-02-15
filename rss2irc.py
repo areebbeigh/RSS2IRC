@@ -16,9 +16,9 @@ feedHasBeen = []
 
 # Print some stuff
 header = """
------------------------------------------------
- RSS2IRC Bot by - M4Shooter - www.areeb-beigh.tk)
------------------------------------------------
+-------------------------------------------------
+ RSS2IRC Bot by - M4Shooter - www.areeb-beigh.tk
+-------------------------------------------------
 """
 print header
 
