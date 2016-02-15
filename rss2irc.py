@@ -11,7 +11,6 @@ import sys
 # Info stuff
 feedList = ["http://www.irchound.tk/forum/syndication.php?fid=2,14,18,4,5,11,17,6,21,23,24,22&limit=5"]
 feedData = []
-feedDataAgain = []
 feedHasBeen = []
 
 # Print some stuff
@@ -28,10 +27,10 @@ port = 6667												# Server port (default = 6667)
 nick = "RSS2IRC"										# Bot's nickname
 ident = "M4Shooter"										# You might wanna enter your name here
 real = "RSS2IRC Bot by M4Shooter - www.areeb-beigh.tk"	# Optional
-default_channel = "#lobby"								# The channel the bot will join and work
+defaultChannel = "#lobby"								# The channel the bot will join and work
 password = "PASSWORD"									# The bot's account password if it's registered (Works with NickServ)
-if default_channel[0] != '#':
-	default_channel = '#'+default_channel
+if defaultChannel[0] != '#':
+	defaultChannel = '#'+defaultChannel
 
 # ----> Danger ahead, please edit only if you know what you're doing!
 
@@ -51,47 +50,47 @@ s.connect((net,port))
 s.send('USER '+ident+' '+net+' bla :'+real+'\r\n')
 s.send('NICK '+nick+'\r\n')
 
-# Function to send a message to the default_channel
-def msg(default_channel, msg):
-	s.send('PRIVMSG '+str(default_channel)+' :'+str(msg)+'\r\n')
+# Function to send a message to the defaultChannel
+def msg(defaultChannel, msg):
+	s.send('PRIVMSG '+str(defaultChannel)+' :'+str(msg)+'\r\n')
 	
 # Fetches the latest feed
 def feed_refresh():
 	print "\nRefreshing feed list..."
-	first_time = False
+	firstTime = False
 	if len(feedData) == 0:
-		first_time = True
+		firstTime = True
  	for feed in feedList:
   		f = feedparser.parse(feed)
   		for entry in f.entries:
 			m = "4"+entry.title.encode('utf-8')+ " | "+"12"+entry.link.encode('utf-8')
 			if m in feedData:
-				first_time = False
+				firstTime = False
 			else:
 				time.sleep(1)
-				msg(default_channel, m)
+				msg(defaultChannel, m)
 				feedData.append(m)
 
 # Return the latest feed (depends on n which by default is 1 max value for n is 4 - You can edit this) 
 def last_feed(n=1):
-	max_feed = 4		# Maximum number of feeds user can request
-	if n > max_feed or n < 1:
-		msg(default_channel, 'Error: Can send only maximum %s feeds and minimum 1' % max_feed)
+	maxFeed = 4		# Maximum number of feeds user can request
+	if n > maxFeed or n < 1:
+		msg(defaultChannel, 'Error: Can send only maximum %s feeds and minimum 1' % maxFeed)
 	else:
 		try:
 			for feed in feedList:
 				f = feedparser.parse(feed)
 				for x in range(0,n):
 					m = "4"+f.entries[x].title.encode('utf-8')+" | "+"12"+f.entries[x].link.encode('utf-8')
-					msg(default_channel, m)
+					msg(defaultChannel, m)
 		except IndexError:									# Sends an error message instead of letting the bot crash
-			msg(default_channel, 'No more feeds')			# due to IndexError if there are less or no feeds
+			msg(defaultChannel, 'No more feeds')			# due to IndexError if there are less or no feeds
 
-# Iterate over the feedList and return results to default_channel
+# Iterate over the feedList and return results to defaultChannel
 def feed_list():
     for feed in feedList:
         time.sleep(1)
-        msg(default_channel,feed)
+        msg(defaultChannel,feed)
 
 # Checks for feeds every 60 seconds
 def update():
@@ -110,15 +109,15 @@ def identify():
 	
 identify()
 		
-# Let's join a default_channel
+# Let's join a defaultChannel
 def join_channel(channel):
-	print "\nJoining %s in 10 seconds" % default_channel
+	print "\nJoining %s in 10 seconds" % defaultChannel
 	time.sleep(10.0)
-	s.send('JOIN '+default_channel+'\r\n') 									# Join the default_channel
-	msg(default_channel, "%s Now Online - Checking latest feed - !feed help to view commands" % nick) 	# Message stuff to channel
+	s.send('JOIN '+defaultChannel+'\r\n') 									# Join the defaultChannel
+	msg(defaultChannel, "%s Now Online - Checking latest feed - !feed help to view commands" % nick) 	# Message stuff to channel
 	last_feed(1)
 
-join_channel(default_channel)
+join_channel(defaultChannel)
 		
 while(True):
 	readbuffer=readbuffer+s.recv(4096)
@@ -131,37 +130,37 @@ while(True):
 	if(line[0]=='PING'):
 		s.send('PONG '+line[1]+'\r\n')
 		
-	if(len(line)==4)and(line[2]==default_channel)and(line[3]==':!feed'):
-		msg(default_channel, "3Last three feeds:")
+	if(len(line)==4)and(line[2]==defaultChannel)and(line[3]==':!feed'):
+		msg(defaultChannel, "3Last three feeds:")
 		last_feed(3)
 			
-	if(len(line)==6)and(line[2]==default_channel)and(line[3]==':!feed')and(line[4]=='last'):
+	if(len(line)==6)and(line[2]==defaultChannel)and(line[3]==':!feed')and(line[4]=='last'):
 		try:
 			last_feed(int(line[5]))
 		except ValueError:
-			msg(default_channel, 'Error: Invalid parameters')
+			msg(defaultChannel, 'Error: Invalid parameters')
 			
-	if(len(line)==5)and(line[2]==default_channel)and(line[3]==':!feed')and(line[4]=='list'):
-		msg(default_channel, '3Feed list:')
+	if(len(line)==5)and(line[2]==defaultChannel)and(line[3]==':!feed')and(line[4]=='list'):
+		msg(defaultChannel, '3Feed list:')
 		feed_list()
 	
-	if(len(line)==5)and(line[2]==default_channel)and(line[3]==':!feed')and(line[4]=='help'):
-		msg(default_channel, '3Commands:')
-		msg(default_channel, '4!feed             -   13Returns last 3 feeds')
-		msg(default_channel, '4!feed last (1-4)  -   13Returns last \'n\' number of feeds')
-		msg(default_channel, '4!feed list        -   13Returns the feed list currently being used')
-		msg(default_channel, '4!credits          -   13View bot credits')
-		msg(default_channel, '4!feed help        -   13View this help dialogue')
+	if(len(line)==5)and(line[2]==defaultChannel)and(line[3]==':!feed')and(line[4]=='help'):
+		msg(defaultChannel, '3Commands:')
+		msg(defaultChannel, '4!feed             -   13Returns last 3 feeds')
+		msg(defaultChannel, '4!feed last (1-4)  -   13Returns last \'n\' number of feeds')
+		msg(defaultChannel, '4!feed list        -   13Returns the feed list currently being used')
+		msg(defaultChannel, '4!credits          -   13View bot credits')
+		msg(defaultChannel, '4!feed help        -   13View this help dialogue')
 			
-	if(len(line)==4)and(line[2]==default_channel)and(line[3]==':!credits'):
-		msg(default_channel, '3Python RSS2IRC Bot v2.0 by M4Shooter')
-		msg(default_channel, "4Based On         -  McNally's 12 https://github.com/maK-/rss2irc-bot")
-		msg(default_channel, "4RSS2IRC v2.0 by  -  M4Shooter 12 https://github.com/M4Shooter/RSS2IRC")
+	if(len(line)==4)and(line[2]==defaultChannel)and(line[3]==':!credits'):
+		msg(defaultChannel, '3Python RSS2IRC Bot v2.0 by M4Shooter')
+		msg(defaultChannel, "4Based On         -  McNally's 12 https://github.com/maK-/rss2irc-bot")
+		msg(defaultChannel, "4RSS2IRC v2.0 by  -  M4Shooter 12 https://github.com/M4Shooter/RSS2IRC")
 		
 	# NOTE: This will disconnect the bot from the server and exit the program. Make sure you allow it to work only
 	# 		with your nick, if you can't simply remove it / comment it out.
 	# 		Replace M4Shooter!M4Shooter@oper.irchound.tk with your mask. Don't forget the ':'
-	if(len(line)==4)and(line[0]==':M4Shooter!M4Shooter@oper.irchound.tk')and(line[2]==default_channel)and(line[3]==':!killsocket'):
+	if(len(line)==4)and(line[0]==':M4Shooter!M4Shooter@oper.irchound.tk')and(line[2]==defaultChannel)and(line[3]==':!killsocket'):
 		s.close()
 		sys.exit(0)
 		
