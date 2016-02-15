@@ -156,7 +156,7 @@ while(True):
 	if(len(line)==4)and(line[2]==default_channel)and(line[3]==':!credits'):
 		msg(default_channel, '3Python RSS2IRC Bot v2.0 by M4Shooter')
 		msg(default_channel, "4Based On         -  McNally's 12 https://github.com/maK-/rss2irc-bot")
-		msg(default_channel, "4RSS2IRC v2.0 by  -  M4Shooter 12 https://github.com/M4Shooter")
+		msg(default_channel, "4RSS2IRC v2.0 by  -  M4Shooter 12 https://github.com/M4Shooter/RSS2IRC")
 		
 	# NOTE: This will disconnect the bot from the server and exit the program. Make sure you allow it to work only
 	# 		with your nick, if you can't simply remove it / comment it out.
