@@ -52,6 +52,6 @@ You can also contact me <a href="http://www.areeb-beigh.tk/contact.html" target=
 Cheers!
 <hr>
 **Developer**: Areeb Beigh (M4Shooter)<br>
-**Website**: www.areeb-beigh.tk<br>
+**Website**: <a href="www.areeb-beigh.tk" target="_blank">www.areeb-beigh.tk</a><br>
 **Mail:** areebbeigh@gmail.com<br>
 **Version**: 2.0
