@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Python RSS2IRC bot by M4Shooter
-# :M4Shooter!M4Shooter@oper.irchound.tk PRIVMSG #lobby :!credits
+# Python RSS2IRC bot by Areeb Beigh
+# :Areeb!Areeb@oper.irchound.tk PRIVMSG #lobby :!credits
 # Above is a reference to how the bot sees messages, you'll need to understand this if you want to add custom commands
 
 import socket, string, feedparser, os, time
@@ -16,7 +16,7 @@ feedHasBeen = []
 # Print some stuff
 header = """
 -------------------------------------------------
- RSS2IRC Bot by - M4Shooter - www.areeb-beigh.tk
+ RSS2IRC Bot by - Areeb Beigh - www.areeb-beigh.tk
 -------------------------------------------------
 """
 print header
@@ -25,8 +25,8 @@ print header
 net = 'irc.irchound.tk'									# The network to connect to
 port = 6667												# Server port (default = 6667)
 nick = "RSS2IRC"										# Bot's nickname
-ident = "M4Shooter"										# You might wanna enter your name here
-real = "RSS2IRC Bot by M4Shooter - www.areeb-beigh.tk"	# Optional
+ident = "Areeb"											# You might wanna enter your name here
+real = "RSS2IRC Bot by Areeb - www.areeb-beigh.tk"		# Optional
 defaultChannel = "#lobby"								# The channel the bot will join and work
 password = "PASSWORD"									# The bot's account password if it's registered (Works with NickServ)
 if defaultChannel[0] != '#':
@@ -153,14 +153,13 @@ while(True):
 		msg(defaultChannel, '4!feed help        -   13View this help dialogue')
 			
 	if(len(line)==4)and(line[2]==defaultChannel)and(line[3]==':!credits'):
-		msg(defaultChannel, '3Python RSS2IRC Bot v2.0 by M4Shooter')
+		msg(defaultChannel, '3Python RSS2IRC Bot v2.0 by Areeb')
 		msg(defaultChannel, "4Based On         -  McNally's 12 https://github.com/maK-/rss2irc-bot")
-		msg(defaultChannel, "4RSS2IRC v2.0 by  -  M4Shooter 12 https://github.com/M4Shooter/RSS2IRC")
+		msg(defaultChannel, "4RSS2IRC v2.0 by  -  Areeb 12 https://github.com/areeb-beigh/RSS2IRC")
 		
 	# NOTE: This will disconnect the bot from the server and exit the program. Make sure you allow it to work only
 	# 		with your nick, if you can't simply remove it / comment it out.
-	# 		Replace M4Shooter!M4Shooter@oper.irchound.tk with your mask. Don't forget the ':'
-	if(len(line)==4)and(line[0]==':M4Shooter!M4Shooter@oper.irchound.tk')and(line[2]==defaultChannel)and(line[3]==':!killsocket'):
+	# 		Replace Areeb!Areeb@oper.irchound.tk with your mask. Don't forget the ':'
+	if(len(line)==4)and(line[0]==':Areeb!Areeb@oper.irchound.tk')and(line[2]==defaultChannel)and(line[3]==':!killsocket'):
 		s.close()
 		sys.exit(0)
-		
