@@ -4,9 +4,8 @@
 # :Areeb!Areeb@oper.irchound.tk PRIVMSG #lobby :!credits
 # Above is a reference to how the bot sees messages, you'll need to understand this if you want to add custom commands
 
-import socket, string, feedparser, os, time
+import socket, string, feedparser, os, time, sys
 from threading import Timer
-import sys
 
 # Info stuff
 feedList = ["http://www.irchound.tk/forum/syndication.php?fid=2,14,18,4,5,11,17,6,21,23,24,22&limit=5"]
