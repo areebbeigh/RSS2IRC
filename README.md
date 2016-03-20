@@ -1,4 +1,6 @@
 # Python RSS2IRC Bot
+
+[![Join the chat at https://gitter.im/areeb-beigh/RSS2IRC](https://badges.gitter.im/areeb-beigh/RSS2IRC.svg)](https://gitter.im/areeb-beigh/RSS2IRC?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 This is a simple IRC bot that'll return feeds from an RSS source to an IRC channel.
 I've used <a href="https://github.com/maK-/rss2irc-bot" target="_blank">this rss2irc</a> bot features for the basic functionality and made many additions,
 bug fixes and improvisations.
