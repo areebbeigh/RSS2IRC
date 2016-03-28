@@ -1,0 +1,2 @@
+# feedparser -> pip install feedparser
+feedparser==5.2.1
