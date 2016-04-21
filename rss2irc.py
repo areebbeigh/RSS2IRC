@@ -104,7 +104,7 @@ update()
 def identify():
 	print "\nLogging in with NickServ in 10 seconds"
 	time.sleep(10.0)
-	s.send('PRIVMSG NickServ IDENTIFY '+str(password)+'\r\n')
+	s.send('PRIVMSG NickServ :IDENTIFY '+str(password)+'\r\n')
 	
 identify()
 		
