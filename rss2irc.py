@@ -1,14 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Python RSS2IRC bot by Areeb Beigh
+# Thank you for using RSS2IRC ^_^!
+
 # :Areeb!Areeb@oper.irchound.tk PRIVMSG #lobby :!credits
 # Above is a reference to how the bot sees messages, you'll need to understand this if you want to add custom commands
 
 import socket, string, feedparser, os, time, sys
 from threading import Timer
 
-# Info stuff
+# List of RSS feed URLs the bot will be reading
 feedList = ["http://www.irchound.tk/forum/syndication.php?fid=2,14,18,4,5,11,17,6,21,23,24,22&limit=5"]
+# Stores feed data
 feedData = []
 feedHasBeen = []
 
@@ -20,7 +22,9 @@ header = """
 """
 print header
 
-# The bot config
+#######
+
+# Bot configuration starts here
 net = 'irc.irchound.tk'									# The network to connect to
 port = 6667												# Server port (default = 6667)
 nick = "RSS2IRC"										# Bot's nickname
@@ -28,10 +32,15 @@ ident = "Areeb"											# You might wanna enter your name here
 real = "RSS2IRC Bot by Areeb - www.areeb-beigh.tk"		# Optional
 defaultChannel = "#lobby"								# The channel the bot will join and work
 password = "PASSWORD"									# The bot's account password if it's registered (Works with NickServ)
+refreshRate = 60										# Checks for new feeds after every n seconds
+# Bot configuration ends here
+
+#######
+
+#### Danger ahead, please edit only if you know what you're doing! ####
+
 if defaultChannel[0] != '#':
 	defaultChannel = '#'+defaultChannel
-
-# ----> Danger ahead, please edit only if you know what you're doing!
 
 # Assign some global variables
 def initiate():
@@ -82,8 +91,8 @@ def last_feed(n=1):
 				for x in range(0,n):
 					m = "4"+f.entries[x].title.encode('utf-8')+" | "+"12"+f.entries[x].link.encode('utf-8')
 					msg(defaultChannel, m)
-		except IndexError:									# Sends an error message instead of letting the bot crash
-			msg(defaultChannel, 'No more feeds')			# due to IndexError if there are less or no feeds
+		except IndexError:							# Sends an error message instead of letting the bot crash
+			msg(defaultChannel, 'No more feeds')	# due to IndexError if there are less or no feeds
 
 # Iterate over the feedList and return results to defaultChannel
 def feed_list():
@@ -93,7 +102,7 @@ def feed_list():
 
 # Checks for feeds every 60 seconds
 def update():
-	x = Timer(60.0, update)
+	x = Timer(refreshRate, update)
 	x.daemon=True
 	x.start()
 	feed_refresh()
@@ -108,7 +117,7 @@ def identify():
 	
 identify()
 		
-# Let's join a defaultChannel
+# Let's join a channel
 def join_channel(channel):
 	print "\nJoining %s in 10 seconds" % defaultChannel
 	time.sleep(10.0)
@@ -116,8 +125,10 @@ def join_channel(channel):
 	msg(defaultChannel, "%s Now Online - Checking latest feed - !feed help to view commands" % nick) 	# Message stuff to channel
 	last_feed(1)
 
+# Joins the channel given in "defaultChannel"
 join_channel(defaultChannel)
-		
+
+# Interacting with the IRC server events		
 while(True):
 	readbuffer=readbuffer+s.recv(4096)
 	temp=string.split(readbuffer, "\n")
@@ -128,7 +139,8 @@ while(True):
 		
 	if(line[0]=='PING'):
 		s.send('PONG '+line[1]+'\r\n')
-		
+	
+	# Responses to different commands start here
 	if(len(line)==4)and(line[2]==defaultChannel)and(line[3]==':!feed'):
 		msg(defaultChannel, "3Last three feeds:")
 		last_feed(3)
