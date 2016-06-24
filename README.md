@@ -52,7 +52,7 @@ probably does not use NickServ.
 If you find any bugs / miss typed stuff in the code please feel free to make a pull request / open an issue on this repo.
 You can also contact me <a href="http://www.areeb-beigh.tk/contact.html" target="_blank">here</a>
 
-Cheers!
+Cheers :coffee:
 <hr>
 **Developer**: Areeb Beigh<br>
 **Website**: <a href="http://www.areeb-beigh.tk" target="_blank">www.areeb-beigh.tk</a><br>
