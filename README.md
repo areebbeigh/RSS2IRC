@@ -57,5 +57,5 @@ Cheers :coffee:
 **Developer**: Areeb Beigh<br>
 **Website**: <a href="http://www.areeb-beigh.tk" target="_blank">www.areeb-beigh.tk</a><br>
 **Mail:** areebbeigh@gmail.com<br>
-**Version**: 2.0
+**Version**: 2.0<br>
 **GitHub Repo:** https://github.com/areeb-beigh/RSS2IRC
