@@ -58,3 +58,4 @@ Cheers :coffee:
 **Website**: <a href="http://www.areeb-beigh.tk" target="_blank">www.areeb-beigh.tk</a><br>
 **Mail:** areebbeigh@gmail.com<br>
 **Version**: 2.0
+**GitHub Repo:** https://github.com/areeb-beigh/RSS2IRC
