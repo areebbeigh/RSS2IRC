@@ -42,8 +42,8 @@ refreshRate = 60										# Checks for new feeds after every n seconds
 if defaultChannel[0] != '#':
 	defaultChannel = '#'+defaultChannel
 
-# Assign some global variables
 def initiate():
+	# Assign some global variables
 	global readbuffer, m
 	readbuffer = ''
 	m = ''
@@ -58,12 +58,13 @@ s.connect((net,port))
 s.send('USER '+ident+' '+net+' bla :'+real+'\r\n')
 s.send('NICK '+nick+'\r\n')
 
-# Function to send a message to the defaultChannel
 def msg(defaultChannel, msg):
+	# This sends a message to the default channel
 	s.send('PRIVMSG '+str(defaultChannel)+' :'+str(msg)+'\r\n')
 	
-# Fetches the latest feed
 def feed_refresh():
+	# Fetches the latest feed
+
 	print "\nRefreshing feed list..."
 	firstTime = False
 	if len(feedData) == 0:
@@ -79,8 +80,10 @@ def feed_refresh():
 				msg(defaultChannel, m)
 				feedData.append(m)
 
-# Return the latest feed (depends on n which by default is 1 max value for n is 4 - You can edit this) 
 def last_feed(n=1):
+	# Messages the latest feed to the channel 
+	# Depends on n which by default is 1 max value for n is 4 - You can edit this
+
 	maxFeed = 4		# Maximum number of feeds user can request
 	if n > maxFeed or n < 1:
 		msg(defaultChannel, 'Error: Can send only maximum %s feeds and minimum 1' % maxFeed)
@@ -94,14 +97,15 @@ def last_feed(n=1):
 		except IndexError:							# Sends an error message instead of letting the bot crash
 			msg(defaultChannel, 'No more feeds')	# due to IndexError if there are less or no feeds
 
-# Iterate over the feedList and return results to defaultChannel
 def feed_list():
+	# Iterates over the feedList and messages the results to the channel
+
     for feed in feedList:
         time.sleep(1)
         msg(defaultChannel,feed)
 
-# Checks for feeds every 60 seconds
 def update():
+	# Checks for feeds every 'n' seconds (edit refreshRate variable above)
 	x = Timer(refreshRate, update)
 	x.daemon=True
 	x.start()
@@ -109,24 +113,25 @@ def update():
 
 update()
 
-# Login with NickServ
 def identify():
+	# Logs in with NickServ
+
 	print "\nLogging in with NickServ in 10 seconds"
 	time.sleep(10.0)
 	s.send('PRIVMSG NickServ :IDENTIFY '+str(password)+'\r\n')
 	
 identify()
 		
-# Let's join a channel
 def join_channel(channel):
+	# Let's join a channel
+
 	print "\nJoining %s in 10 seconds" % defaultChannel
 	time.sleep(10.0)
-	s.send('JOIN '+defaultChannel+'\r\n') 									# Join the defaultChannel
-	msg(defaultChannel, "%s Now Online - Checking latest feed - !feed help to view commands" % nick) 	# Message stuff to channel
+	s.send('JOIN '+defaultChannel+'\r\n')
+	msg(defaultChannel, "%s Now Online - Checking latest feed - !feed help to view commands" % nick)
 	last_feed(1)
 
-# Joins the channel given in "defaultChannel"
-join_channel(defaultChannel)
+join_channel(defaultChannel) # Join defaultChannel
 
 # Interacting with the IRC server events		
 while(True):
@@ -169,8 +174,8 @@ while(True):
 		msg(defaultChannel, "4RSS2IRC v2.0 by  -  Areeb 12 https://github.com/areeb-beigh/RSS2IRC")
 		
 	# NOTE: This will disconnect the bot from the server and exit the program. Make sure you allow it to work only
-	# 		with your nick, if you can't simply remove it / comment it out.
-	# 		Replace Areeb!Areeb@oper.irchound.tk with your mask. Don't forget the ':'
+	# with your nick, if you can't simply remove it / comment it out.
+	# Replace Areeb!Areeb@oper.irchound.tk with your mask. Don't forget the ':' prefix
 	if(len(line)==4)and(line[0]==':Areeb!Areeb@oper.irchound.tk')and(line[2]==defaultChannel)and(line[3]==':!killsocket'):
 		s.close()
 		sys.exit(0)
