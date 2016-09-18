@@ -1,14 +1,11 @@
 # Python RSS2IRC Bot
-[![Requirements Status](https://requires.io/github/areeb-beigh/RSS2IRC/requirements.svg?branch=master)](https://requires.io/github/areeb-beigh/RSS2IRC/requirements/?branch=master)
-[![Join the chat at https://gitter.im/areeb-beigh/RSS2IRC](https://badges.gitter.im/areeb-beigh/RSS2IRC.svg)](https://gitter.im/areeb-beigh/RSS2IRC?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-This is a simple IRC bot that'll return feeds from an RSS source to an IRC channel.
-I've used <a href="https://github.com/maK-/rss2irc-bot" target="_blank">this rss2irc</a> bot features for the basic functionality and made many additions,
-bug fixes and improvisations.
+This is a simple IRC bot that'll return feeds from an RSS source to 1 or more IRC channels.
 <hr>
 ## Configuration
-To configure the bot open rss2irc.py with any text editor, scroll down to the config part and replace the default info with the desired one.
-Description for each feild is marked after the "#" hastag.
+To configure the bot open `config/config.py` with any text editor and being with the configuration. All the details about 
+different fields are already included as comments in the file.
+
 <hr>
 ## Commands
 <table width="50%">
@@ -18,35 +15,42 @@ Description for each feild is marked after the "#" hastag.
 <td>!feed</td><td>Returns last 3 feeds</td>
 </tr>
 <tr>
-<td>!feed last (1-4)</td><td>Returns last 'n' number of feeds</td>
+<td>!feed last (1-5)</td><td>Returns last 'n' number of feeds</td>
 </tr>
 <tr>
 <td>!feed list</td><td>Returns the feed list currently being used</td>
 </tr>
 <tr>
-<td>!credits</td><td>View bot credits</td>
-</tr>
-<tr>
 <td>!feed help</td><td>View this help dialogue</td>
 </tr>
+<tr>
+<td>!credits</td><td>View bot credits</td>
+</tr>
 </table>
+
+<hr>
+##Admin commands
+<table>
+<tr><td>!login</td><td>Uses NickServ to login with the bot password set in the config</td></tr>
+<tr><td>!killsocket</td><td>Kills the bot connection</td></tr>
+</table>
+
+The bot can have only 1 admin. The admin is determined by the complete nick, ident and hostmask and hence, you need to configure this properly. You can look at the debug messages in the console while the bot is running to get your nick, ident
+and hostmask string.
+
 <hr>
 ## Possible Snags
 ##### 1. Bot is not joining the channel
-Once the script is started the bot will take sometime to login and join the channel (minimum 40 seconds),
-yet it depends on the latency. You can do a /whois <bot nick> to check if the bot has at least connected to the network.
-If it does not join try restarting the script.
+Check if the bot actually connected to the network by using /whois <bot_nick> or <bot_alt_nick> if the bot is not connected
+then both the nick and alt_nick are occupied. If the bot is connected and yet it is not joining the channels then check the channel settings (ban masks, invite only, registered only etc.).
 
 ##### 2. No feeds
-Check if the URL you provided is working and it is an RSS feed. 
-<a href="http://www.irchound.tk/forum/syndication.php?fid=2,14,18,4,5,11,17,6,21,23,24,22&limit=5" target="_blank">
-here's what an RSS page looks like
+Check if the URL you provided is working and it is a valid feed source. Here's what an RSS page looks like: https://github.com/areeb-beigh.atom
 </a>.
 
 ##### 3. Bot is not logging in
-This bot uses NickServ to login and which will happen only if the nick name it uses is regsitered. Make sure
-the nickname is registered and the password you have entered is correct. If it still does not work the network you're connecting to
-probably does not use NickServ.
+This bot uses NickServ to login which will happen only if the nick name it uses is regsitered. Make sure
+the nickname is registered and the password you have entered is correct. Also try the `!login` command and see if it identifies. If it still does not work the network you're connecting to probably does not use NickServ.
 
 ##### 4. Bugs
 If you find any bugs / miss typed stuff in the code please feel free to make a pull request / open an issue on this repo.
@@ -54,8 +58,6 @@ You can also contact me <a href="http://www.areeb-beigh.tk/contact.html" target=
 
 Cheers :coffee:
 <hr>
-**Developer**: Areeb Beigh<br>
-**Website**: <a href="http://www.areeb-beigh.tk" target="_blank">www.areeb-beigh.tk</a><br>
-**Mail:** areebbeigh@gmail.com<br>
-**Version**: 2.0<br>
+**Developer**: Areeb Beigh <areebbeigh@gmail.com><br>
+**Version**: 2.1<br>
 **GitHub Repo:** https://github.com/areeb-beigh/RSS2IRC
