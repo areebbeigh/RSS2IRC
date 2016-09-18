@@ -1,181 +1,214 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Thank you for using RSS2IRC ^_^!
+
+# Python RSS2IRC Bot - github.io/areeb-beigh/rss2irc
+
+##############################################################################
+#                                                                            #
+#    Copyright (C) 2016  Areeb Beigh <areebbeigh@gmail.com>                  #
+#                                                                            #
+#    This program is free software: you can redistribute it and/or modify    #
+#    it under the terms of the GNU General Public License as published by    #
+#    the Free Software Foundation, either version 3 of the License, or       #
+#    (at your option) any later version.                                     #
+#                                                                            #
+#    This program is distributed in the hope that it will be useful,         #
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of          #
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           #
+#    GNU General Public License for more details.                            #
+#                                                                            #
+#    You should have received a copy of the GNU General Public License       #
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.   #
+#                                                                            #
+##############################################################################
 
 # :Areeb!Areeb@oper.irchound.tk PRIVMSG #lobby :!credits
 # Above is a reference to how the bot sees messages, you'll need to understand this if you want to add custom commands
 
-import socket, string, feedparser, os, time, sys
+# TODO: Add !pausefeeds and !resumefeeds
+
+# Python imports
+import feedparser  # pip install feedparser
+import socket
+import time
 from threading import Timer
 
-# List of RSS feed URLs the bot will be reading
-feedList = ["http://www.irchound.tk/forum/syndication.php?fid=2,14,18,4,5,11,17,6,21,23,24,22&limit=5"]
-# Stores feed data
-feedData = []
-feedHasBeen = []
+# Configuration import
+from config.config import *
 
-# Print some stuff
-header = """
--------------------------------------------------
- RSS2IRC Bot by - Areeb Beigh - www.areeb-beigh.tk
--------------------------------------------------
-"""
-print header
 
-#######
+def main():
+    global irc, feed_manager, ALT_NICK
+    print("""
+    ---------------------------------------------
+    RSS2IRC Bot by Areeb - github.io/areeb-beigh
+    ---------------------------------------------
+    """)
+    # Validating configuration
+    for channel in CHANNELS:
+        if channel[0] != '#':
+            CHANNELS[CHANNELS.index(channel)] = '#' + channel
+    if ALT_NICK == NICK:
+        ALT_NICK += "_"
+    irc = IRCBot()
+    feed_manager = Feed()
+    update()
+    irc.connect()
 
-# Bot configuration starts here
-net = 'irc.irchound.tk'									# The network to connect to
-port = 6667												# Server port (default = 6667)
-nick = "RSS2IRC"										# Bot's nickname
-ident = "Areeb"											# You might wanna enter your name here
-real = "RSS2IRC Bot by Areeb - www.areeb-beigh.tk"		# Optional
-defaultChannel = "#lobby"								# The channel the bot will join and work
-password = "PASSWORD"									# The bot's account password if it's registered (Works with NickServ)
-refreshRate = 60										# Checks for new feeds after every n seconds
-# Bot configuration ends here
 
-#######
+class IRCBot:
+    """ All the IRC aspects of the bot are managed in this class """
 
-#### Danger ahead, please edit only if you know what you're doing! ####
+    def __init__(self):
+        self.s = socket.socket()
+        self.new_feed = False
 
-if defaultChannel[0] != '#':
-	defaultChannel = '#'+defaultChannel
+    def connect(self):
+        """ Connects the bot to the IRC network """
+        self.s.connect((str(NET), int(PORT)))
+        self.s.send(bytes("NICK %s\r\n" % NICK, "UTF-8"))
+        self.s.send(bytes("USER %s %s bla :%s\r\n" % (IDENT, NET, REALNAME), "UTF-8"))
+        self.join_all_channels()
+        time.sleep(10)
+        self.identify()
+        while True:
+            read_buffer = "" + self.s.recv(1024).decode("UTF-8")
+            temp = read_buffer.split("\n")
+            read_buffer = temp.pop()
+            print(read_buffer)
+            for line in temp:
+                line = str.rstrip(line)
+                line = str.split(line)
+                print("line:", line)
+                if len(line) >= 2 and line[1] == '433':
+                    # 433 is an error code - ERR_NICKNAMEINUSE i.e the nickname is already in use
+                    print("Nick already exists, changing nick to " + ALT_NICK)
+                    self.change_nick(ALT_NICK)
+                    self.join_all_channels()
 
-def initiate():
-	# Assign some global variables
-	global readbuffer, m
-	readbuffer = ''
-	m = ''
-	print "Assigned global variables..."
+            if self.new_feed:
+                self.broadcast(feed_manager.feed_data[len(feed_manager.feed_data) - 1])
+                self.new_feed = False
 
-initiate()
+            if line[0] == 'PING':
+                self.s.send(bytes('PONG ' + line[1] + '\r\n', 'UTF-8'))
 
-# Let's connect the bot
-print "\nConnecting to %s..." % net
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((net,port))
-s.send('USER '+ident+' '+net+' bla :'+real+'\r\n')
-s.send('NICK '+nick+'\r\n')
+            # Responses to different commands start here
+            if len(line) >= 3 and line[2] in CHANNELS:
+                chan = line[2]
+                if len(line) == 4 and line[2] in CHANNELS and line[3] == ':!killsocket' and line[0] == ADMIN:
+                    print("!killsocket by " + ADMIN)
+                    self.s.close()
+                    exit()
+                if len(line) == 4 and line[2] in CHANNELS and line[3] == ':!login' and line[0] == ADMIN:
+                    self.identify()
+                if len(line) == 4 and line[2] in CHANNELS and line[3] == ':!feed':
+                    self.msg(chan, "3Last three feeds:")
+                    for feed in feed_manager.last_feed(3):
+                        self.msg(chan, feed)
 
-def msg(defaultChannel, msg):
-	# This sends a message to the default channel
-	s.send('PRIVMSG '+str(defaultChannel)+' :'+str(msg)+'\r\n')
-	
-def feed_refresh():
-	# Fetches the latest feed
+                if len(line) == 6 and line[2] in CHANNELS and line[3] == ':!feed' and line[4] == 'last':
+                    try:
+                        for feed in feed_manager.last_feed(int(line[5])):
+                            self.msg(chan, feed)
+                    except ValueError:
+                        self.msg(chan, 'Error: Invalid parameters')
 
-	print "\nRefreshing feed list..."
-	firstTime = False
-	if len(feedData) == 0:
-		firstTime = True
- 	for feed in feedList:
-  		f = feedparser.parse(feed)
-  		for entry in f.entries:
-			m = "4"+entry.title.encode('utf-8')+ " | "+"12"+entry.link.encode('utf-8')
-			if m in feedData:
-				firstTime = False
-			else:
-				time.sleep(1)
-				msg(defaultChannel, m)
-				feedData.append(m)
+                if len(line) == 5 and line[2] in CHANNELS and line[3] == ':!feed' and line[4] == 'list':
+                    self.msg(chan, '3Feed list:')
+                    for feed_resource in feed_resources:
+                        self.msg(chan, feed_resource)
 
-def last_feed(n=1):
-	# Messages the latest feed to the channel 
-	# Depends on n which by default is 1 max value for n is 4 - You can edit this
+                if len(line) == 5 and line[2] in CHANNELS and line[3] == ':!feed' and line[4] == 'help':
+                    self.msg(chan, '3Commands:')
+                    self.msg(chan, '4!feed             -   13Returns last 3 feed_manager')
+                    self.msg(chan, '4!feed help        -   13View this help dialogue')
+                    self.msg(chan, '4!feed last (1-5)  -   13Returns last \'n\' number of feed_manager')
+                    self.msg(chan, '4!feed list        -   13Returns the feed resources currently being used')
+                    self.msg(chan, '4!credits          -   13View bot credits')
 
-	maxFeed = 4		# Maximum number of feeds user can request
-	if n > maxFeed or n < 1:
-		msg(defaultChannel, 'Error: Can send only maximum %s feeds and minimum 1' % maxFeed)
-	else:
-		try:
-			for feed in feedList:
-				f = feedparser.parse(feed)
-				for x in range(0,n):
-					m = "4"+f.entries[x].title.encode('utf-8')+" | "+"12"+f.entries[x].link.encode('utf-8')
-					msg(defaultChannel, m)
-		except IndexError:							# Sends an error message instead of letting the bot crash
-			msg(defaultChannel, 'No more feeds')	# due to IndexError if there are less or no feeds
+                if len(line) == 4 and line[2] in CHANNELS and line[3] == ':!credits':
+                    # Don't remove please :)
+                    self.msg(chan, '3Python RSS2IRC Bot v2.1 Credits')
+                    self.msg(chan, "4RSS2IRC v2.1 by Areeb - 12 https://github.io/areeb-beigh/RSS2IRC")
 
-def feed_list():
-	# Iterates over the feedList and messages the results to the channel
+    def identify(self):
+        """ Logs in with NickServ """
+        print("Attempting to identify...")
+        print(bytes('PRIVMSG NickServ :IDENTIFY %s %s\r\n' % (NICK, PASSWORD), 'UTF-8'))
+        self.s.send(bytes('PRIVMSG NickServ :IDENTIFY %s %s\r\n' % (NICK, PASSWORD), 'UTF-8'))
 
-    for feed in feedList:
-        time.sleep(1)
-        msg(defaultChannel,feed)
+    def change_nick(self, new_nick):
+        """ Changes the bots nickname to new_nick """
+        self.s.send(bytes("NICK %s\r\n" % new_nick, "UTF-8"))
+
+    def join_all_channels(self):
+        """ Joins all the channels in CHANNELS """
+        for chan in CHANNELS:
+            self.join_channel(chan)
+
+    def join_channel(self, channel):
+        """ Joins the bot to the given channel """
+        self.s.send(bytes('JOIN ' + channel + '\r\n', 'UTF-8'))
+        self.msg(channel, "%s Now Online - Checking latest feed - !feed help to view commands" % NICK)
+        for feed_msg in feed_manager.last_feed(1):
+            self.msg(channel, feed_msg)
+
+    def msg(self, channel, msg):
+        """ Sends the given to the given channel """
+        self.s.send(bytes('PRIVMSG ' + str(channel) + ' :' + str(msg) + '\r\n', 'UTF-8'))
+
+    def broadcast(self, msg):
+        """ Sends a message to all the channels in the CHANNELS list """
+        for channel in CHANNELS:
+            self.msg(channel, msg)
+
+
+class Feed:
+    """ All the feed aspects of the bot are managed here """
+
+    def __init__(self):
+        self.feed_data = []
+
+    def feed_refresh(self):
+        """ Refreshes the feed data """
+        first_time = False
+        if len(self.feed_data) == 0:
+            first_time = True
+        for feed_resource in feed_resources:
+            f = feedparser.parse(feed_resource)
+            for entry in f.entries:
+                feed = "4" + entry.title + " | " + "12" + entry.link
+                if feed not in self.feed_data:
+                    if not first_time:
+                        irc.new_feed = True
+                    self.feed_data.append(feed)
+
+    def last_feed(self, n=1):
+        """
+        Returns a list of the latest 'n' feed(s).
+        """
+        MAX_FEEDS = 5  # Maximum number of feeds a user can request
+        msgs = []
+        if n > MAX_FEEDS or n < 1:
+            return ["Error: Can send only maximum %s feed_manager and minimum 1" % MAX_FEEDS]
+        else:
+            self.feed_refresh()
+            for i in range(n):
+                try:
+                    msgs.append(self.feed_data[i])
+                except IndexError:
+                    msgs.append("No more feeds")
+                    break
+            return msgs
+
 
 def update():
-	# Checks for feeds every 'n' seconds (edit refreshRate variable above)
-	x = Timer(refreshRate, update)
-	x.daemon=True
-	x.start()
-	feed_refresh()
+    """ Checks for feed_manager every 'n' seconds (edit REFRESH_RATE variable above) """
+    x = Timer(REFRESH_RATE, update)
+    x.daemon = True
+    x.start()
+    feed_manager.feed_refresh()
 
-update()
 
-def identify():
-	# Logs in with NickServ
-
-	print "\nLogging in with NickServ in 10 seconds"
-	time.sleep(10.0)
-	s.send('PRIVMSG NickServ :IDENTIFY '+str(password)+'\r\n')
-	
-identify()
-		
-def join_channel(channel):
-	# Let's join a channel
-
-	print "\nJoining %s in 10 seconds" % defaultChannel
-	time.sleep(10.0)
-	s.send('JOIN '+defaultChannel+'\r\n')
-	msg(defaultChannel, "%s Now Online - Checking latest feed - !feed help to view commands" % nick)
-	last_feed(1)
-
-join_channel(defaultChannel) # Join defaultChannel
-
-# Interacting with the IRC server events		
-while(True):
-	readbuffer=readbuffer+s.recv(4096)
-	temp=string.split(readbuffer, "\n")
-	readbuffer=temp.pop()
-	for line in temp:
-		line=string.rstrip(line)
-		line=string.split(line)
-		
-	if(line[0]=='PING'):
-		s.send('PONG '+line[1]+'\r\n')
-	
-	# Responses to different commands start here
-	if(len(line)==4)and(line[2]==defaultChannel)and(line[3]==':!feed'):
-		msg(defaultChannel, "3Last three feeds:")
-		last_feed(3)
-			
-	if(len(line)==6)and(line[2]==defaultChannel)and(line[3]==':!feed')and(line[4]=='last'):
-		try:
-			last_feed(int(line[5]))
-		except ValueError:
-			msg(defaultChannel, 'Error: Invalid parameters')
-			
-	if(len(line)==5)and(line[2]==defaultChannel)and(line[3]==':!feed')and(line[4]=='list'):
-		msg(defaultChannel, '3Feed list:')
-		feed_list()
-	
-	if(len(line)==5)and(line[2]==defaultChannel)and(line[3]==':!feed')and(line[4]=='help'):
-		msg(defaultChannel, '3Commands:')
-		msg(defaultChannel, '4!feed             -   13Returns last 3 feeds')
-		msg(defaultChannel, '4!feed last (1-4)  -   13Returns last \'n\' number of feeds')
-		msg(defaultChannel, '4!feed list        -   13Returns the feed list currently being used')
-		msg(defaultChannel, '4!credits          -   13View bot credits')
-		msg(defaultChannel, '4!feed help        -   13View this help dialogue')
-			
-	if(len(line)==4)and(line[2]==defaultChannel)and(line[3]==':!credits'):
-		msg(defaultChannel, '3Python RSS2IRC Bot v2.0 by Areeb')
-		msg(defaultChannel, "4Based On         -  McNally's 12 https://github.com/maK-/rss2irc-bot")
-		msg(defaultChannel, "4RSS2IRC v2.0 by  -  Areeb 12 https://github.com/areeb-beigh/RSS2IRC")
-		
-	# NOTE: This will disconnect the bot from the server and exit the program. Make sure you allow it to work only
-	# with your nick, if you can't simply remove it / comment it out.
-	# Replace Areeb!Areeb@oper.irchound.tk with your mask. Don't forget the ':' prefix
-	if(len(line)==4)and(line[0]==':Areeb!Areeb@oper.irchound.tk')and(line[2]==defaultChannel)and(line[3]==':!killsocket'):
-		s.close()
-		sys.exit(0)
+if __name__ == "__main__":
+    main()
