@@ -54,7 +54,7 @@ the nickname is registered and the password you have entered is correct. Also tr
 
 ##### 4. Bugs
 If you find any bugs / miss typed stuff in the code please feel free to make a pull request / open an issue on this repo.
-You can also contact me <a href="http://www.areeb-beigh.tk/contact.html" target="_blank">here</a>
+You can also contact me via areebbeigh@gmail.com
 
 Cheers :coffee:
 <hr>
