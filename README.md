@@ -40,19 +40,19 @@ and hostmask string.
 
 <hr>
 ## Possible Snags
-##### 1. Bot is not joining the channel
+### 1. Bot is not joining the channel
 Check if the bot actually connected to the network by using /whois <bot_nick> or <bot_alt_nick> if the bot is not connected
 then both the nick and alt_nick are occupied. If the bot is connected and yet it is not joining the channels then check the channel settings (ban masks, invite only, registered only etc.).
 
-##### 2. No feeds
+### 2. No feeds
 Check if the URL you provided is working and it is a valid feed source. Here's what an RSS page looks like: https://github.com/areeb-beigh.atom
 </a>.
 
-##### 3. Bot is not logging in
+### 3. Bot is not logging in
 This bot uses NickServ to login which will happen only if the nick name it uses is regsitered. Make sure
 the nickname is registered and the password you have entered is correct. Also try the `!login` command and see if it identifies. If it still does not work the network you're connecting to probably does not use NickServ.
 
-##### 4. Bugs
+### 4. Bugs
 If you find any bugs / miss typed stuff in the code please feel free to make a pull request / open an issue on this repo.
 You can also contact me via areebbeigh@gmail.com
 
