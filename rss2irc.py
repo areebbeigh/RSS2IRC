@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Python RSS2IRC Bot - github.io/areeb-beigh/rss2irc
+# Python RSS2IRC Bot - github.io/areebbeigh/rss2irc
 
 ##############################################################################
 #                                                                            #
@@ -40,7 +40,7 @@ def main():
     global irc, feed_manager, ALT_NICK
     print("""
     ---------------------------------------------
-    RSS2IRC Bot by Areeb - github.io/areeb-beigh
+    RSS2IRC Bot by Areeb - github.io/areebbeigh
     ---------------------------------------------
     """)
     # Validating configuration
@@ -129,7 +129,7 @@ class IRCBot:
                 if len(line) == 4 and line[2] in CHANNELS and line[3] == ':!credits':
                     # Don't remove please :)
                     self.msg(chan, '3Python RSS2IRC Bot v2.1 Credits')
-                    self.msg(chan, "4RSS2IRC v2.1 by Areeb - 12 https://github.io/areeb-beigh/RSS2IRC")
+                    self.msg(chan, "4RSS2IRC v2.1 by Areeb - 12 https://github.io/areebbeigh/RSS2IRC")
 
     def identify(self):
         """ Logs in with NickServ """
