@@ -7,10 +7,9 @@ To configure the bot open `config/config.py` with any text editor and being with
 different fields are already included as comments in the file.
 
 <hr>
-## Commands
+## Public Commands
 <table width="50%">
-<td>Command</td>
-<td>Description</td>
+<tr><td>Command</td><td>Description</td></tr>
 <tr>
 <td>!feed</td><td>Returns last 3 feeds</td>
 </tr>
@@ -31,6 +30,7 @@ different fields are already included as comments in the file.
 <hr>
 ##Admin commands
 <table>
+<tr><td>Command</td><td>Description</td></tr>
 <tr><td>!login</td><td>Uses NickServ to login with the bot password set in the config</td></tr>
 <tr><td>!killsocket</td><td>Kills the bot connection</td></tr>
 </table>
