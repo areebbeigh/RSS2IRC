@@ -1,9 +1,10 @@
 # Python RSS2IRC Bot
 
 This is a simple IRC bot that'll return feeds from an RSS source to 1 or more IRC channels.
+
 <hr>
 ## Configuration
-To configure the bot open `config/config.py` with any text editor and being with the configuration. All the details about 
+To configure the bot open `config/config.py` with any text editor and being with the configuration. All the details about
 different fields are already included as comments in the file.
 
 <hr>
@@ -59,5 +60,5 @@ You can also contact me via areebbeigh@gmail.com
 Cheers :coffee:
 <hr>
 **Developer**: Areeb Beigh <areebbeigh@gmail.com><br>
-**Version**: 2.1<br>
+**Version**: 2.2<br>
 **GitHub Repo:** https://github.io/areebbeigh/RSS2IRC

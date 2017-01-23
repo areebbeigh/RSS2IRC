@@ -30,6 +30,7 @@
 import feedparser  # pip install feedparser
 import socket
 import time
+import re
 from threading import Timer
 
 # Configuration import
@@ -61,36 +62,82 @@ class IRCBot:
     def __init__(self):
         self.s = socket.socket()
         self.new_feed = False
+        self.current_nick = NICK  # the bot's current nick name
+        self.joined_channels = set()  # channels the bot joined
+        self.kicked_channels = set()  # channesl the bot was kicked out of
 
     def connect(self):
         """ Connects the bot to the IRC network """
         self.s.connect((str(NET), int(PORT)))
         self.s.send(bytes("NICK %s\r\n" % NICK, "UTF-8"))
         self.s.send(bytes("USER %s %s bla :%s\r\n" % (IDENT, NET, REALNAME), "UTF-8"))
-        self.join_all_channels()
         time.sleep(10)
         self.identify()
+        self.join_all_channels()
+        last_check = time.time()
         while True:
             read_buffer = "" + self.s.recv(1024).decode("UTF-8")
             temp = read_buffer.split("\n")
             read_buffer = temp.pop()
             print(read_buffer)
+
             for line in temp:
                 line = str.rstrip(line)
                 line = str.split(line)
-                print("line:", line)
+                print(line)
                 if len(line) >= 2 and line[1] == '433':
                     # 433 is an error code - ERR_NICKNAMEINUSE i.e the nickname is already in use
                     print("Nick already exists, changing nick to " + ALT_NICK)
                     self.change_nick(ALT_NICK)
                     self.join_all_channels()
 
+                if line[0] == 'PING':
+                    print("Responded to PING")
+                    self.s.send(bytes('PONG ' + line[1] + '\r\n', 'UTF-8'))
+
+                if len(line) >= 2 and line[1] in ["KICK", "JOIN"]:
+                    update = False
+
+                    if line[1] == "KICK":
+                        update = True
+                        if self.current_nick == line[3]:
+                            chan = line[2]
+                            print("Kicked from " + chan)
+                            self.kicked_channels.add(chan)
+                            if chan in self.joined_channels:
+                                self.joined_channels.remove(chan)
+                            if chan in CHANNELS:
+                                self.join_channel(chan)
+
+                    elif line[1] == "JOIN":
+                        update = True
+                        if self.is_own_action(line[0]):
+                            chan = line[2]
+                            print("Joined channel " + chan)
+                            self.joined_channels.add(chan)
+                            if chan in self.kicked_channels:
+                                self.kicked_channels.remove(chan)
+                    if update:
+                        print("Joined to:", self.joined_channels)
+                        print("Kicked from:", self.kicked_channels)
+
+            # Check regularly if the bot has been disconnected from any of the channels
+            # this will start 1 minute after the bot connects to avoid spam.
+            if time.time() - last_check > 60:
+                for chan in CHANNELS:
+                    if chan not in self.joined_channels:
+                        self.join_channel(chan)
+                    last_check = time.time()
+
             if self.new_feed:
                 self.broadcast(feed_manager.feed_data[len(feed_manager.feed_data) - 1])
                 self.new_feed = False
 
+            '''
             if line[0] == 'PING':
+                print("Responded to PING")
                 self.s.send(bytes('PONG ' + line[1] + '\r\n', 'UTF-8'))
+            '''
 
             # Responses to different commands start here
             if len(line) >= 3 and line[2] in CHANNELS:
@@ -128,8 +175,14 @@ class IRCBot:
 
                 if len(line) == 4 and line[2] in CHANNELS and line[3] == ':!credits':
                     # Don't remove please :)
-                    self.msg(chan, '3Python RSS2IRC Bot v2.1 Credits')
-                    self.msg(chan, "4RSS2IRC v2.1 by Areeb - 12 https://github.com/areebbeigh/RSS2IRC")
+                    self.msg(chan, '3Python RSS2IRC Bot v2.2 Credits')
+                    self.msg(chan, "4RSS2IRC v2.2 by Areeb - 12 https://github.com/areebbeigh/RSS2IRC")
+
+    def is_own_action(self, user_info):
+        """ Determines whether the action was related to this bot """
+        if re.search(self.current_nick, user_info):
+            return True
+        return False
 
     def identify(self):
         """ Logs in with NickServ """
@@ -140,6 +193,7 @@ class IRCBot:
     def change_nick(self, new_nick):
         """ Changes the bots nickname to new_nick """
         self.s.send(bytes("NICK %s\r\n" % new_nick, "UTF-8"))
+        self.current_nick = new_nick
 
     def join_all_channels(self):
         """ Joins all the channels in CHANNELS """
