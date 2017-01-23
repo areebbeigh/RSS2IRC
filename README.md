@@ -45,7 +45,7 @@ and hostmask string.
 Check if the bot actually connected to the network by using /whois <bot_nick> or <bot_alt_nick> if the bot is not connected
 then both the nick and alt_nick are occupied. If the bot is connected and yet it is not joining the channels then check the channel settings (ban masks, invite only, registered only etc.).
 
-Note: After fixing issue #5 some changes were made to the script. The bot may take about 1 minute before joining the channels on some networks.
+Note: After fixing <a href="https://github.com/areebbeigh/RSS2IRC/issues/5">issue #5</a> some changes were made to the script. The bot may take about 1 minute before joining the channels on some networks.
 
 ### 2. No feeds
 Check if the URL you provided is working and it is a valid feed source. Here's what an RSS page looks like: https://github.com/areeb-beigh.atom
