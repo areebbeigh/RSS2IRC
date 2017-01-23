@@ -63,4 +63,4 @@ Cheers :coffee:
 <hr>
 **Developer**: Areeb Beigh <areebbeigh@gmail.com><br>
 **Version**: 2.2<br>
-**GitHub Repo:** https://github.io/areebbeigh/RSS2IRC
+**GitHub Repo:** https://github.com/areebbeigh/RSS2IRC
