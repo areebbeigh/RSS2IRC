@@ -48,7 +48,7 @@ then both the nick and alt_nick are occupied. If the bot is connected and yet it
 Note: After fixing <a href="https://github.com/areebbeigh/RSS2IRC/issues/5">issue #5</a> some changes were made to the script. The bot may take about 1 minute before joining the channels on some networks.
 
 ### 2. No feeds
-Check if the URL you provided is working and it is a valid feed source. Here's what an RSS page looks like: https://github.com/areeb-beigh.atom
+Check if the URL you provided is working and it is a valid feed source. Here's what an RSS page looks like: https://github.com/areebbeigh.atom
 </a>.
 
 ### 3. Bot is not logging in
