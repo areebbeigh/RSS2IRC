@@ -54,6 +54,7 @@ def main():
     irc = IRCBot()
     feed_manager = Feed()
     update()
+    check_channels()
     irc.connect()
 
 
@@ -109,7 +110,7 @@ class IRCBot:
                     if command == ":\x01TIME\x01":
                         self.send_command_NOTICE(user, "TIME Buy a watch!")
                         ctcp = "TIME"
-                    if command == ":\x01PING\x01":
+                    if command == ":\x01PING":
                         self.send_command_NOTICE(user, "PONG")
                         ctcp = "PING"
 
@@ -131,8 +132,6 @@ class IRCBot:
                             self.kicked_channels.add(chan)
                             if chan in self.joined_channels:
                                 self.joined_channels.remove(chan)
-                            if chan in CHANNELS:
-                                self.join_channel(chan)
 
                     if line[1] == "JOIN":
                         update = True
@@ -148,16 +147,6 @@ class IRCBot:
                     if update:
                         print("Joined to:", self.joined_channels)
                         print("Kicked from:", self.kicked_channels)
-
-            # Check regularly if the bot has been disconnected from any of the channels
-            # this will start 1 minute after the bot connects to avoid spam.
-            if time.time() - last_check > 15:
-                # print(self.joined_channels, self.kicked_channels)
-                for chan in CHANNELS:
-                    if chan not in self.joined_channels:
-                        print("[Channel Check] Joining " + chan)
-                        self.join_channel(chan)
-                    last_check = time.time()
 
             if self.new_feed:
                 self.broadcast(feed_manager.feed_data[len(feed_manager.feed_data) - 1])
@@ -208,6 +197,17 @@ class IRCBot:
                     self.msg(chan, '3Python RSS2IRC Bot %s Credits' % BOT_VERSION)
                     self.msg(chan, "4RSS2IRC v2.2 by Areeb - 12 https://github.com/areebbeigh/RSS2IRC")
 
+    def check_channels(self):
+        """ Makes sure that the bot is joined to all channels in the config """
+        for chan in CHANNELS:
+            if chan not in self.joined_channels:
+                # print(self.joined_channels, self.kicked_channels)
+                try:
+                    self.join_channel(chan)
+                    print("[Channel Check] Joining " + chan)
+                except OSError:
+                    pass
+
     def send_command_NOTICE(self, user, command):
         """ Send PRIVMSG to user """
         print("NOTICE to " + user + ":", command)
@@ -219,7 +219,7 @@ class IRCBot:
 
     def is_own_action(self, user_info):
         """ Determines whether the action was related to this bot """
-        if re.search(self.current_nick, user_info):
+        if self.get_user(user_info) == self.current_nick:
             return True
         return False
 
@@ -227,7 +227,9 @@ class IRCBot:
         """ Logs in with NickServ """
         print("Attempting to identify...")
         print(bytes('PRIVMSG NickServ :IDENTIFY %s %s\r\n' % (NICK, PASSWORD), 'UTF-8'))
+        print(bytes('PRIVMSG NickServ :IDENTIFY %s\r\n' % PASSWORD, 'UTF-8'))
         self.s.send(bytes('PRIVMSG NickServ :IDENTIFY %s %s\r\n' % (NICK, PASSWORD), 'UTF-8'))
+        self.s.send(bytes('PRIVMSG NickServ :IDENTIFY %s\r\n' % PASSWORD, 'UTF-8'))
 
     def change_nick(self, new_nick):
         """ Changes the bots nickname to new_nick """
@@ -302,6 +304,11 @@ def update():
     x.start()
     feed_manager.feed_refresh()
 
+def check_channels():
+    x = Timer(15, check_channels)
+    x.daemon = True
+    x.start()
+    irc.check_channels()
 
 if __name__ == "__main__":
     main()
