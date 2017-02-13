@@ -76,16 +76,11 @@ class IRCBot:
         self.identify()
         self.join_all_channels()
         last_check = time.time()
-        first_time = True
         while True:
             read_buffer = "" + self.s.recv(1024).decode("UTF-8")
             temp = read_buffer.split("\n")
             read_buffer = temp.pop()
             print(read_buffer)
-
-            if first_time:
-                self.join_all_channels()
-                first_time = False
 
             for line in temp:
                 line = str.rstrip(line)
