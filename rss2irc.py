@@ -36,6 +36,7 @@ from threading import Timer
 # Configuration import
 from config.config import *
 
+BOT_VERSION = "v2.2"
 
 def main():
     global irc, feed_manager, ALT_NICK
@@ -75,11 +76,16 @@ class IRCBot:
         self.identify()
         self.join_all_channels()
         last_check = time.time()
+        first_time = True
         while True:
             read_buffer = "" + self.s.recv(1024).decode("UTF-8")
             temp = read_buffer.split("\n")
             read_buffer = temp.pop()
             print(read_buffer)
+
+            if first_time:
+                self.join_all_channels()
+                first_time = False
 
             for line in temp:
                 line = str.rstrip(line)
@@ -91,9 +97,31 @@ class IRCBot:
                     self.change_nick(ALT_NICK)
                     self.join_all_channels()
 
+                ########################### CTCP replies start here ###########################
+
                 if line[0] == 'PING':
-                    print("Responded to PING")
                     self.s.send(bytes('PONG ' + line[1] + '\r\n', 'UTF-8'))
+                    print("Responded to PING")
+
+                if len(line) >= 4 and line[2] == self.current_nick:
+                    user = self.get_user(line[0])
+                    command = line[3]
+                    ctcp = ""
+
+                    if command == ":\x01VERSION\x01":
+                        self.send_command_NOTICE(user, "VERSION RSS2IRC Bot %s by Areeb" % BOT_VERSION)
+                        ctcp = "VERSION"
+                    if command == ":\x01TIME\x01":
+                        self.send_command_NOTICE(user, "TIME Buy a watch!")
+                        ctcp = "TIME"
+                    if command == ":\x01PING\x01":
+                        self.send_command_NOTICE(user, "PONG")
+                        ctcp = "PING"
+
+                    if ctcp:
+                        print("Responded to " + ctcp)
+
+                ############################ CTCP replies end here ############################
 
                 if len(line) >= 2 and line[1] in ["KICK", "JOIN"]:
                     update = False
@@ -102,6 +130,8 @@ class IRCBot:
                         update = True
                         if self.current_nick == line[3]:
                             chan = line[2]
+                            if chan[0] == ":":
+                                chan = chan[1:]
                             print("Kicked from " + chan)
                             self.kicked_channels.add(chan)
                             if chan in self.joined_channels:
@@ -109,23 +139,28 @@ class IRCBot:
                             if chan in CHANNELS:
                                 self.join_channel(chan)
 
-                    elif line[1] == "JOIN":
+                    if line[1] == "JOIN":
                         update = True
                         if self.is_own_action(line[0]):
                             chan = line[2]
+                            if chan[0] == ":":
+                                chan = chan[1:]
                             print("Joined channel " + chan)
                             self.joined_channels.add(chan)
                             if chan in self.kicked_channels:
                                 self.kicked_channels.remove(chan)
+
                     if update:
                         print("Joined to:", self.joined_channels)
                         print("Kicked from:", self.kicked_channels)
 
             # Check regularly if the bot has been disconnected from any of the channels
             # this will start 1 minute after the bot connects to avoid spam.
-            if time.time() - last_check > 60:
+            if time.time() - last_check > 15:
+                # print(self.joined_channels, self.kicked_channels)
                 for chan in CHANNELS:
                     if chan not in self.joined_channels:
+                        print("[Channel Check] Joining " + chan)
                         self.join_channel(chan)
                     last_check = time.time()
 
@@ -175,8 +210,17 @@ class IRCBot:
 
                 if len(line) == 4 and line[2] in CHANNELS and line[3] == ':!credits':
                     # Don't remove please :)
-                    self.msg(chan, '3Python RSS2IRC Bot v2.2 Credits')
+                    self.msg(chan, '3Python RSS2IRC Bot %s Credits' % BOT_VERSION)
                     self.msg(chan, "4RSS2IRC v2.2 by Areeb - 12 https://github.com/areebbeigh/RSS2IRC")
+
+    def send_command_NOTICE(self, user, command):
+        """ Send PRIVMSG to user """
+        print("NOTICE to " + user + ":", command)
+        self.s.send(bytes("NOTICE " + user + " :\x01" + command + "\x01\r\n", "UTF-8"))
+
+    def get_user(self, line):
+        """ Returns the user nickname """
+        return line.strip(":").split("!")[0]
 
     def is_own_action(self, user_info):
         """ Determines whether the action was related to this bot """
@@ -257,7 +301,7 @@ class Feed:
 
 
 def update():
-    """ Checks for feed_manager every 'n' seconds (edit REFRESH_RATE variable above) """
+    """ Checks for feeds every 'n' seconds (edit REFRESH_RATE variable above) """
     x = Timer(REFRESH_RATE, update)
     x.daemon = True
     x.start()
