@@ -78,7 +78,15 @@ class IRCBot:
         self.join_all_channels()
         last_check = time.time()
         while True:
-            read_buffer = "" + self.s.recv(1024).decode("UTF-8")
+            try:
+                read_buffer = "" + self.s.recv(1024).decode("UTF-8")
+            except UnicodeDecodeError:
+                try:
+                    read_buffer = "" + self.s.recv(1024).decode("latin-1")
+                except UnicodeDecodeError:
+                    read_buffer = ""
+                    print("Couldn't decode buffer string")
+
             temp = read_buffer.split("\n")
             read_buffer = temp.pop()
             print(read_buffer)
