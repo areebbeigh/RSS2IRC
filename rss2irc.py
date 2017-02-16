@@ -92,9 +92,10 @@ class IRCBot:
             print(read_buffer)
 
             for line in temp:
+                #line = line.encode("UTF-8").rstrip().split()
                 line = str.rstrip(line)
                 line = str.split(line)
-                print(line)
+                print(repr(line))
                 if len(line) >= 2 and line[1] == '433':
                     # 433 is an error code - ERR_NICKNAMEINUSE i.e the nickname is already in use
                     print("Nick already exists, changing nick to " + ALT_NICK)
@@ -103,7 +104,7 @@ class IRCBot:
 
                 ########################### CTCP replies start here ###########################
 
-                if line[0] == 'PING':
+                if len(line) >= 1 and line[0] == 'PING':
                     self.s.send(bytes('PONG ' + line[1] + '\r\n', 'UTF-8'))
                     print("Responded to PING")
 
