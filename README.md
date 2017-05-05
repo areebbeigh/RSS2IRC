@@ -57,7 +57,6 @@ then both the nick and alt_nick are occupied. If the bot is connected and yet it
 ### 2. No feeds
 
 Check if the URL you provided is working and it is a valid feed source. Here's what an RSS page looks like: https://github.com/areebbeigh.atom
-</a>.
 
 ### 3. Bot is not logging in
 
@@ -71,6 +70,7 @@ You can also contact me via areebbeigh@gmail.com
 
 Cheers :coffee:
 <hr>
-**Developer**: Areeb Beigh <areebbeigh@gmail.com><br>
-**Version**: 2.2<br>
-**GitHub Repo:** https://github.com/areebbeigh/RSS2IRC
+
+Developer: Areeb Beigh [areebbeigh@gmail.com]<br>
+Version: 2.2<br>
+GitHub Repo: https://github.com/areebbeigh/RSS2IRC
